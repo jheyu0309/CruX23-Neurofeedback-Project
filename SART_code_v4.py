@@ -420,7 +420,7 @@ def sart_trial(win, fb, omitNum, fix, numStim, correctStim,
         distB = True
     else:
         distB = False
-    return [str(bNum), str(distßB), str(tNum), str(dist), str(number), str(omitNum), str(respAcc),
+    return [str(bNum), str(distB), str(tNum), str(dist), str(number), str(omitNum), str(respAcc),
             str(respRt), str(startTime), str(endTime)]
 
 def main():

@@ -19,9 +19,7 @@ This code is for NUMERICAL STIMULATION
 
 The modifications made are noted here as well on github:
     Collected participant's phone usage in hours [part_info_gui()]
-    Added counterbalancing condition: 
-        1: stage 1 uses numStim and stage 3 uses alphaStim
-        2: stage 1 uses alphaStim and stage 3 uses numStim
+    Added counterbalancing condition in the info gui (but didn't change any code yet)
     Reduced the number of blocks to 6 [sart()]
     Changed the number of repetitions of all 9 digits within each block to be 7 [sart()]
     Reduced the circle and X stimuli down just to the + stimulus with smaller font [sart_trial()]
@@ -29,6 +27,7 @@ The modifications made are noted here as well on github:
     Randomize 3 blocks excluding block 1 to be distraction blocks [sart()]
         of which randomize 3 trials to play distraction sound concurrently [sart_block()]
     Added two T/F columns to indicate whether the current block or trial is distraction or not [sart_block(), sart_trial()]
+    Added self evaluation
     
 The following task attributes can be easily modified (see the sart()
 function documentation below for details):
@@ -137,7 +136,7 @@ def sart(monitor="testMonitor", blocks=6, reps=7, omitNum=3, practice=True,
     """
     partInfo = part_info_gui() # show info page
     mainResultList = []
-    fileName = "SART_" + str(partInfo[0]) + ".txt" 
+    fileName = "SART_" + str(partInfo[0]) + ".tsv"
     outFile = open(path + fileName, "w") # output file path
     win = visual.Window(fullscr=False, color="black", units='cm',
                         monitor=monitor) 
@@ -160,20 +159,26 @@ def sart(monitor="testMonitor", blocks=6, reps=7, omitNum=3, practice=True,
                               reps=reps, bNum=block, fixed=fixed, dist=dist, distBlocks=distBlocks)) # pass in dist
         if (blocks > 1) and (block != blocks):
             sart_break_inst(win) # shows take-a-break message
+    evalInfo = self_eval_gui() ## Self evaluation form at the end
     outFile.write("part_num\tpart_gender\tpart_age\t" +
-                  "part_hours\texp_initials\tCB_condition\tblock_num\tdist_block\ttrial_num\tdist_trial\t" +
+                  "part_hours\texp_initials\tCB_condition\tawareness" +
+                  "\tattention\tblock_num\tdist_block\ttrial_num\tdist_trial\t" +
                   "number\tomit_num\tresp_acc\tresp_rt_s\ttrial_start_time_s" +
                   "\ttrial_end_time_s\tmean_trial_time_s\ttiming_function\n") ## Added indicator columns whether the block and trial is distraction or not
-                  
     """
-    participant number, gender, age, school year, hours on phone, experimenter initials, block number (1-6), distraction block (T/F),
-    trial number (1-63), distraction trial (T/F), omit number (3), response accuracy, response time (s), trial start time (s), trial end time (s), 
+    participant number, gender, age, hours on phone, experimenter initials, 
+    condition block number (1/2), participant awareness (1-6), 
+    participant attention (1-6), distraction block (T/F), trial number (1-63), 
+    distraction trial (T/F), omit number (3), response accuracy, 
+    response time (s), trial start time (s), trial end time (s), 
     mean trial time (s), timing function
     """
     
     for line in mainResultList:
         for item in partInfo:
             outFile.write(str(item) + "\t")
+        for number in evalInfo:
+            outFile.write(str(number) + "\t") ## Add self eval info
         for col in line:
             outFile.write(str(col) + "\t")
         outFile.write("time.perf_counter()\n")
@@ -422,6 +427,21 @@ def sart_trial(win, fb, omitNum, fix, numStim, correctStim,
         distB = False
     return [str(bNum), str(distB), str(tNum), str(dist), str(number), str(omitNum), str(respAcc),
             str(respRt), str(startTime), str(endTime)]
+
+## Self-evaluation GUI
+def self_eval_gui():
+    info = gui.Dlg(title='Self evaluation')
+    info.addText('Please rate yourself on these questions by clicking on a number below: ')
+    info.addField('How aware were you of where your attention was during this block of trials? 1 <- not aware, very aware -> 6',
+                    choices=["Please Select", "1", "2", "3", "4", "5", "6"])
+    info.addField('Where was your attention focused during this block of trials? 1 <- off-task, on-task -> 6', 
+                  choices=["Please Select", "1", "2", "3", "4", "5", "6"])
+    info.show()
+    if info.OK:
+        infoData = info.data
+    else:
+        sys.exit()
+    return infoData
 
 def main():
     sart()
